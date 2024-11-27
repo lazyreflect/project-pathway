@@ -8,6 +8,7 @@ class AgentDClient:
     def __init__(self, base_url: Optional[str] = None):
         self.base_url = base_url or os.getenv('AGENT_D_BASE_URL', 'http://localhost:8000')
         self.session = requests.Session()
+        self.client_secret = os.getenv('API_CLIENT_SECRET')
 
     def execute_command(self, command: str) -> str:
         """Send a command to Agent-D for execution."""
@@ -29,3 +30,24 @@ class AgentDClient:
                 return result
         except requests.exceptions.RequestException as e:
             raise ConnectionError(f"Failed to execute command: {e}") 
+
+    def set_credentials(self, username: str, password: str):
+        """Set credentials in Agent-D securely."""
+        url = f"{self.base_url}/api/set_credentials"
+        headers = {
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "username": username,
+            "password": password,
+            "client_secret": self.client_secret
+        }
+        try:
+            response = self.session.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            if response.content:
+                return response.json()
+            else:
+                return {"message": "No content in response"}
+        except requests.exceptions.RequestException as e:
+            raise ConnectionError(f"Failed to set credentials: {e}") 
