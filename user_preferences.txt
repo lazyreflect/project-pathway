@@ -1,0 +1,56 @@
+Business Info:
+Name: Comfort Dental South Independence
+Address: 12400 E US Hwy 40, Independence, MO 64055
+Phone: +1 (816) 897-5850
+Email: southindependence@comfortdental.biz
+
+Dentists:
+- Dr. Mike Lee
+- Dr. Jessica Ellis
+- Dr. Joseph Pitluck
+- Dr. Huan Yang
+
+Websites to use:
+
+Practice Management System (PMS):
+- Curve Dental
+  Description: Dental practice management software used for managing patient data, scheduling appointments, billing, and processing insurance claims.
+  URL: https://comfortdentalsid.curvehero.com/#/
+
+Insurance Verification Portals (use for eligibility verification, claim submission, claim status, and other insurance related tasks):
+
+State Medicaid:
+- MoHealthNet (eMOMED, MHN)
+  Description: The official provider portal for MO HealthNet, Missouri's Medicaid program administered by the state.
+  URL: https://www.emomed.com/
+
+Managed Care Organizations(MCO's are private companies that contract with the state to provide Medicaid benefits):
+- Envolve Dental
+  Description: Administers dental benefits for Centene Corporation's health plans in Missouri, including Home State Health Plan, Show Me Healthy Kids, Ambetter from Home State Health, Wellcare, and Wellcare by Allwell.
+  URL: https://pwp.envolvedental.com/
+- DentaQuest / MO Healthy Blue:
+  URL: https://providers.dentaquest.com/
+- UnitedHealthcare
+  Description: Administering dental benefits for UnitedHealthcare plans, including Medicaid and Medicare Advantage.
+  URL: https://app.dentalhub.com/
+
+Clinical Decision Support Systems (CDSS):
+  - CyberAccess
+  Description: A clinical decision support system that provides healthcare providers with access to patient clinical data, medication history, and other essential health information.
+  URL: https://www.cyberaccessonline.net/
+
+How to look up a patient's eligibility who has Medicaid:
+1. Get full name and date of birth. Ask the user if you don't have it.
+2. Navigate first to emomed.com and log in.
+3. Navigate to the "Participant Eligibility" section.
+4. First, enter the text of the date of first service using the format MM/DD/YYYY. Use today's date if you don't have it.
+5. Next, enter the patient's first and last name and date of birth.
+5. Retrieve the Participant DCN (this is the patient's unique identifier for their Medicaid benefits).
+6. Determine if the patient is eligible.
+7. If the patient is eligible. determine if a MCO administers their benefits. This will be under the Other or Additional Payor "Lockin Information" section. Search for names like "HEALTHY BLUE", "HOME STATE HEALTH PLAN", "SHOW ME HEALTHY KIDS", "UNITED HEALTHCARE", etc.
+8. If the patient is eligible and a MCO DOES NOT administer their benefits, determine the type of MHN coverage they have.
+9. If the patient is eligible and a MCO DOES administer their benefits, determine which MCO portal URL to navigate to. Remember, you will need the patient's full name, DOB, and DCN to look up MCO benefits.
+10. Navigate to the MCO portal URL and log in.
+11. Navigate to the "Eligibility" section.
+12. Enter the patient's full name, DOB, and DCN.
+13. Summarize the patient's eligibility.
