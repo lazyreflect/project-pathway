@@ -12,7 +12,8 @@ class BasicSearchAgent:
         def print_stream(line: str):
             print(f"Streaming: {line}", flush=True)
 
-        command = "Navigate to google.com and search for the latest weather in Kansas City."
+        query = state.get('query', '')
+        command = f"Navigate to google.com and search for: {query}"
         response = self.agent_d_client.execute_command(command, callback=print_stream)
         state['search_results'] = response
         return state 
