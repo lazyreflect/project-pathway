@@ -9,7 +9,10 @@ class BasicSearchAgent:
 
     def execute(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the agent's task."""
+        def print_stream(line: str):
+            print(f"Streaming: {line}", flush=True)
+
         command = "Navigate to google.com and search for the latest weather in Kansas City."
-        response = self.agent_d_client.execute_command(command)
+        response = self.agent_d_client.execute_command(command, callback=print_stream)
         state['search_results'] = response
         return state 

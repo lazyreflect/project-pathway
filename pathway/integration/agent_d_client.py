@@ -10,8 +10,8 @@ class AgentDClient:
         self.session = requests.Session()
         self.client_secret = os.getenv('API_CLIENT_SECRET')
 
-    def execute_command(self, command: str) -> str:
-        """Send a command to Agent-D for execution."""
+    def execute_command(self, command: str, callback=None):
+        """Send a command to Agent-D for execution with streaming support."""
         url = f"{self.base_url}/execute_task"
         headers = {
             "Content-Type": "application/json"
@@ -26,6 +26,8 @@ class AgentDClient:
                 for line in response.iter_lines():
                     if line:
                         decoded_line = line.decode('utf-8')
+                        if callback:
+                            callback(decoded_line)
                         result += decoded_line + '\n'
                 return result
         except requests.exceptions.RequestException as e:

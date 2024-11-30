@@ -15,6 +15,7 @@ def main():
     try:
         final_state = workflow.invoke(initial_state)
         print("Workflow completed successfully!")
+        print(f"Search Results: {final_state['search_results']}")
     except Exception as e:
         print(f"Error executing workflow: {e}")
 
