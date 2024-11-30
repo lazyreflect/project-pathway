@@ -1,3 +1,11 @@
+# Tasks
+
+## Preface
+
+This document outlines a series of workflows designed to automate dental administrative tasks using LangGraph. The workflows progress from simple to more complex, providing a structured approach to building functionality while adhering to LangGraph best practices. Each workflow is designed to be a cohesive process that can be implemented using LangGraph's stateful, graph-based orchestration capabilities.
+
+---
+
 ### **Phase 0: Setup**
 
 **Task 1: Basic Google Search**
