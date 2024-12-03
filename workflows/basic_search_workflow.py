@@ -27,19 +27,19 @@ def create_workflow():
         """Process final results."""
         if state.get('error'):
             print(f"Error: {state['error']}")
-            return state
-            
-        print("\nTask Execution Summary:")
-        print("----------------------")
-        if state.get('plan'):
-            print(f"Planning:")
-            print(f"- Chosen Agent: {state['plan'].get('agent', 'unknown')}")
-            print(f"- Reasoning: {state['plan'].get('reasoning', 'none provided')}")
-            
-        if state.get('search_results'):
-            print("\nResults:")
-            print(state['search_results'])
-            
+        else:
+            print("\nTask Execution Summary:")
+            print("----------------------")
+            if state.get('plan'):
+                print(f"Planning:")
+                print(f"- Chosen Agent: {state['plan'].get('agent', 'unknown')}")
+                print(f"- Reasoning: {state['plan'].get('reasoning', 'none provided')}")
+                if state['plan'].get('agent') == 'self':
+                    print(f"\nResponse:")
+                    print(state['plan'].get('instructions', ''))
+            if state.get('search_results'):
+                print("\nResults:")
+                print(state['search_results'])
         return state
 
     # Add nodes to the workflow

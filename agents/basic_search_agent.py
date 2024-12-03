@@ -16,4 +16,8 @@ class BasicSearchAgent:
         command = f"Navigate to google.com and search for: {query}"
         response = self.agent_d_client.execute_command(command, callback=print_stream)
         state['search_results'] = response
-        return state 
+        return state
+
+    def get_capabilities(self) -> str:
+        """Return a description of the agent's capabilities."""
+        return "Can perform Google searches and return results" 
