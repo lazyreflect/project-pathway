@@ -1,6 +1,7 @@
 from typing import Dict, Any, List
 from pathway.integration.agent_d_client import AgentDClient
 from .basic_search_agent import BasicSearchAgent
+from .insurance.insurance_agent import InsuranceAgent
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 import os
@@ -22,7 +23,8 @@ class SupervisorAgent:
 
         self.agent_d_client = AgentDClient()
         self.available_agents = {
-            'search': BasicSearchAgent(self.agent_d_client)
+            'search': BasicSearchAgent(self.agent_d_client),
+            'insurance': InsuranceAgent()
         }
 
         # Initialize LLM with environment variables
@@ -87,7 +89,12 @@ Output format:
             return {
                 "agent": "self",
                 "reasoning": "Error occurred during planning, handling directly",
-                "instructions": f"I apologize, but I encountered an error while processing your request. Here are the available agents and their capabilities:\n- search: Can perform Google searches and return results"
+                "instructions": (
+                    "I apologize, but I encountered an error while processing your request. "
+                    "Here are the available agents and their capabilities:\n"
+                    "- search: Can perform Google searches and return results\n"
+                    "- insurance: Handles insurance-related tasks and delegates to specialist agents"
+                )
             }
 
     def execute(self, state: Dict[str, Any]) -> Dict[str, Any]:
@@ -113,5 +120,8 @@ Output format:
             result_state['reasoning'] = plan.get('reasoning', '')
             return result_state
         else:
-            state['error'] = f"Unknown or unsupported agent: {agent_name}. Available agents: {self.get_available_agents()}"
+            state['error'] = (
+                f"Unknown or unsupported agent: {agent_name}. "
+                f"Available agents: {self.get_available_agents()}"
+            )
             return state
