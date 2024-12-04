@@ -1,6 +1,7 @@
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict, Optional, Dict, Any
 from agents.supervisor_agent import SupervisorAgent
+import logging
 
 class WorkflowState(TypedDict):
     """Type definition for the workflow state."""
@@ -10,6 +11,8 @@ class WorkflowState(TypedDict):
     error: Optional[str]
     plan: Dict[str, Any]
     reasoning: str
+    timestamp: Optional[str]
+    agent_logs: Optional[str]
 
 def create_workflow():
     """Create and return a compiled workflow."""
@@ -18,16 +21,21 @@ def create_workflow():
 
     def start(state: WorkflowState) -> WorkflowState:
         """Initialize the workflow state."""
+        state['timestamp'] = logging.Formatter.formatTime(logging.LogRecord)
+        logging.info("Workflow started.")
         return state
 
     def execute_task(state: WorkflowState) -> WorkflowState:
         """Execute the task using SupervisorAgent."""
-        return supervisor.execute(state)
+        state = supervisor.execute(state)
+        logging.info("Task executed.")
+        return state
 
     def end_workflow(state: WorkflowState) -> WorkflowState:
         """Process final results."""
         if state.get('error'):
             print(f"Error: {state['error']}")
+            logging.error(f"Workflow ended with error: {state['error']}")
         else:
             print("\nTask Execution Summary:")
             print("----------------------")
@@ -41,6 +49,7 @@ def create_workflow():
             if state.get('portal_response'):
                 print("\nPortal Response:")
                 print(state['portal_response'])
+            logging.info("Workflow completed successfully.")
         return state
 
     # Add nodes to the workflow
