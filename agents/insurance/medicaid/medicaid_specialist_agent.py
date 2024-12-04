@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, Any
 from agents.insurance.medicaid.portals.mohealthnet_agent import MoHealthNetAgent
 
@@ -12,7 +13,7 @@ class MedicaidSpecialistAgent:
 
     def execute(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Delegate the task to the appropriate portal agent."""
-        print(f"Streaming: data: {{\"message\": \"MedicaidSpecialistAgent processing request\", \"type\": \"info\"}}", flush=True)
+        logging.info("MedicaidSpecialistAgent processing request")
         
         portal_name = state.get('portal_name', 'mohealthnet').lower()
         if portal_name in self.portal_agents:
@@ -21,7 +22,7 @@ class MedicaidSpecialistAgent:
         else:
             error_msg = f"Unknown portal: {portal_name}"
             state['error'] = error_msg
-            print(f"Streaming: data: {{\"message\": \"Error: {error_msg}\", \"type\": \"error\"}}", flush=True)
+            logging.error(error_msg)
             return state
 
     def get_capabilities(self) -> str:

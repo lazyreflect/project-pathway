@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, Any
 from agents.insurance.medicaid.medicaid_specialist_agent import MedicaidSpecialistAgent
 
@@ -12,7 +13,7 @@ class InsuranceAgent:
 
     def execute(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Delegate the task to the appropriate specialist agent."""
-        print(f"Streaming: data: {{\"message\": \"InsuranceAgent processing request\", \"type\": \"info\"}}", flush=True)
+        logging.info("InsuranceAgent processing request")
         
         # Parse patient info from the query
         query = state.get('query', '')
@@ -25,7 +26,7 @@ class InsuranceAgent:
                 'last_name': name_part.split()[-1],
                 'dob': dob_part
             }
-            print(f"Streaming: data: {{\"message\": \"Parsed patient info: {state['patient_info']}\", \"type\": \"info\"}}", flush=True)
+            logging.info(f"Parsed patient info: {state['patient_info']}")
         
         insurance_type = state.get('insurance_type', 'medicaid').lower()
         if insurance_type in self.specialists:
@@ -34,7 +35,7 @@ class InsuranceAgent:
         else:
             error_msg = f"Unknown insurance type: {insurance_type}"
             state['error'] = error_msg
-            print(f"Streaming: data: {{\"message\": \"Error: {error_msg}\", \"type\": \"error\"}}", flush=True)
+            logging.error(error_msg)
             return state
 
     def get_capabilities(self) -> str:
