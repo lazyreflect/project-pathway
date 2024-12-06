@@ -1,7 +1,10 @@
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict, Optional, Dict, Any
 from agents.supervisor_agent import SupervisorAgent
+from utils.logging_config import setup_logging
 import logging
+from datetime import datetime
+import uuid
 
 class WorkflowState(TypedDict):
     """Type definition for the workflow state."""
@@ -16,40 +19,80 @@ class WorkflowState(TypedDict):
 
 def create_workflow():
     """Create and return a compiled workflow."""
+    # Setup logging
+    setup_logging()
+    logger = logging.getLogger(__name__)
+    
     workflow = StateGraph(WorkflowState)
     supervisor = SupervisorAgent()
 
     def start(state: WorkflowState) -> WorkflowState:
         """Initialize the workflow state."""
-        state['timestamp'] = logging.Formatter.formatTime(logging.LogRecord)
-        logging.info("Workflow started.")
+        transaction_id = str(uuid.uuid4())
+        logger.log_with_metadata(
+            logging.INFO,
+            "Workflow started",
+            metadata={
+                'workflow_step': 'initialization',
+                'transaction_id': transaction_id
+            }
+        )
+        
+        state['timestamp'] = datetime.now().isoformat()
+        state['transaction_id'] = transaction_id
         return state
 
     def execute_task(state: WorkflowState) -> WorkflowState:
         """Execute the task using SupervisorAgent."""
+        logger.log_with_metadata(
+            logging.INFO,
+            "Executing task",
+            metadata={
+                'workflow_step': 'execution',
+                'transaction_id': state.get('transaction_id')
+            }
+        )
+        
         state = supervisor.execute(state)
-        logging.info("Task executed.")
+        
+        logger.log_with_metadata(
+            logging.INFO,
+            "Task executed",
+            metadata={
+                'workflow_step': 'completion',
+                'transaction_id': state.get('transaction_id'),
+                'status': 'success' if not state.get('error') else 'error'
+            }
+        )
         return state
 
     def end_workflow(state: WorkflowState) -> WorkflowState:
         """Process final results."""
         if state.get('error'):
-            print(f"Error: {state['error']}")
-            logging.error(f"Workflow ended with error: {state['error']}")
+            logger.log_with_metadata(
+                logging.ERROR,
+                f"Workflow ended with error: {state['error']}",
+                metadata={
+                    'workflow_step': 'completion',
+                    'transaction_id': state.get('transaction_id'),
+                    'status': 'error'
+                }
+            )
         else:
-            print("\nTask Execution Summary:")
-            print("----------------------")
-            if state.get('plan'):
-                print(f"Planning:")
-                print(f"- Chosen Agent: {state['plan'].get('agent', 'unknown')}")
-                print(f"- Reasoning: {state['plan'].get('reasoning', 'none provided')}")
-                if state['plan'].get('agent') == 'self':
-                    print(f"\nResponse:")
-                    print(state['plan'].get('instructions', ''))
-            if state.get('portal_response'):
-                print("\nPortal Response:")
-                print(state['portal_response'])
-            logging.info("Workflow completed successfully.")
+            logger.log_with_metadata(
+                logging.INFO,
+                "Workflow completed successfully",
+                metadata={
+                    'workflow_step': 'completion',
+                    'transaction_id': state.get('transaction_id'),
+                    'status': 'success',
+                    'execution_time': (
+                        datetime.now() - 
+                        datetime.fromisoformat(state['timestamp'])
+                    ).total_seconds()
+                }
+            )
+            
         return state
 
     # Add nodes to the workflow

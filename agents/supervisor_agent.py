@@ -8,6 +8,8 @@ import os
 from dotenv import load_dotenv
 import logging
 import json
+from datetime import datetime
+from utils.logging_config import CustomLogger
 
 
 class SupervisorAgent:
@@ -17,15 +19,17 @@ class SupervisorAgent:
         # Ensure environment variables are loaded
         load_dotenv()
 
-        # Configure logging
-        self.logger = logging.getLogger(self.__class__.__name__)
+        # Configure logging with custom logger
+        self.logger = CustomLogger(self.__class__.__name__)
         self.logger.setLevel(logging.INFO)
 
         # Check for required environment variables
         openai_api_key = os.getenv('OPENAI_API_KEY')
         if not openai_api_key:
-            self.logger.error(
-                "OPENAI_API_KEY not found in environment variables. Please check your .env file."
+            self.logger.log_with_metadata(
+                logging.ERROR,
+                "OPENAI_API_KEY not found in environment variables",
+                metadata={'error_type': 'configuration'}
             )
             raise ValueError(
                 "OPENAI_API_KEY not found in environment variables. Please check your .env file."
@@ -119,52 +123,70 @@ Output format:
     def execute(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the task using LLM planning and appropriate agent."""
         query = state.get('query', '')
-        self.logger.info(f"Executing task with query: {query}")
+        self.logger.log_with_metadata(
+            logging.INFO,
+            f"Executing task with query: {query}",
+            metadata={'workflow_step': 'planning_start'}
+        )
 
         # Get plan from LLM
         plan = self.plan_task(query)
 
         # Store the planning results in state
         state['plan'] = plan
-        self.logger.info(f"Updated state with plan: {state['plan']}")
+        self.logger.log_with_metadata(
+            logging.INFO,
+            "Planning completed",
+            metadata={
+                'workflow_step': 'planning_complete',
+                'chosen_agent': plan.get('agent', 'unknown'),
+                'reasoning': plan.get('reasoning', 'none')
+            }
+        )
 
         agent_name = plan.get('agent', '').lower()
         if agent_name == 'self':
             # Supervisor handles the response directly
             state['response'] = plan.get('instructions', '')
-            self.logger.info("Supervisor handling the response directly.")
+            self.logger.log_with_metadata(
+                logging.INFO,
+                "Supervisor handling response directly",
+                metadata={'workflow_step': 'self_handling'}
+            )
             return state
         elif agent_name in self.available_agents:
             # Delegate to the chosen agent
-            self.logger.info(f"Delegating task to agent: {agent_name}")
+            self.logger.log_with_metadata(
+                logging.INFO,
+                f"Delegating task to agent: {agent_name}",
+                metadata={'workflow_step': 'delegation'}
+            )
             state['query'] = plan.get('instructions', query)
             agent = self.available_agents[agent_name]
             result_state = agent.execute(state)
             result_state['reasoning'] = plan.get('reasoning', '')
             
-            # Format the final response more cleanly
-            self.logger.info("Task execution completed with results:")
-            self.logger.info("-" * 50)
-            self.logger.info(f"Agent: {agent_name}")
-            self.logger.info(f"Reasoning: {result_state['reasoning']}")
-            if 'portal_response' in result_state:
-                self._log_formatted_portal_response(result_state['portal_response'])
+            self.logger.log_with_metadata(
+                logging.INFO,
+                "Task execution completed",
+                metadata={
+                    'workflow_step': 'completion',
+                    'agent': agent_name,
+                    'status': 'success' if not result_state.get('error') else 'error'
+                }
+            )
             
             return result_state
         else:
-            error_msg = f"Unknown or unsupported agent: {agent_name}. Available agents: {self.get_available_agents()}"
+            error_msg = f"Unknown or unsupported agent: {agent_name}"
             state['error'] = error_msg
-            self.logger.error(error_msg)
+            self.logger.log_with_metadata(
+                logging.ERROR,
+                error_msg,
+                metadata={
+                    'workflow_step': 'error',
+                    'error_type': 'unknown_agent',
+                    'available_agents': list(self.available_agents.keys())
+                }
+            )
             return state
-
-    def _log_formatted_portal_response(self, portal_response: str):
-        """Format portal response logs in a more readable way."""
-        try:
-            for line in portal_response.split('\n'):
-                if line.startswith('data: '):
-                    data = json.loads(line[6:])  # Skip 'data: ' prefix
-                    if 'message' in data:
-                        msg_type = data.get('type', 'info').upper()
-                        self.logger.info(f"[{msg_type}] {data['message']}")
-        except Exception as e:
-            self.logger.error(f"Error formatting portal response: {e}")

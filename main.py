@@ -2,17 +2,8 @@ from dotenv import load_dotenv
 import argparse
 import sys
 import os
-import logging
 from workflows.basic_search_workflow import create_workflow
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+from utils.logging_config import setup_logging
 
 def check_environment():
     """Check if all required environment variables are set."""
@@ -27,6 +18,9 @@ def check_environment():
         sys.exit(1)
 
 def main():
+    # Setup logging first
+    setup_logging()
+    
     # Load and check environment variables
     load_dotenv()
     check_environment()
