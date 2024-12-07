@@ -7,15 +7,15 @@ from langchain_core.prompts import ChatPromptTemplate
 import os
 from dotenv import load_dotenv
 import logging
-import json
 from datetime import datetime
 from utils.logging_config import CustomLogger
+from langchain_ollama import ChatOllama
 
 
 class SupervisorAgent:
     """Supervisor agent that uses LLM for task planning and delegation."""
 
-    def __init__(self):
+    def __init__(self, llm_provider="openai"):
         # Ensure environment variables are loaded
         load_dotenv()
 
@@ -23,30 +23,14 @@ class SupervisorAgent:
         self.logger = CustomLogger(self.__class__.__name__)
         self.logger.setLevel(logging.INFO)
 
-        # Check for required environment variables
-        openai_api_key = os.getenv('OPENAI_API_KEY')
-        if not openai_api_key:
-            self.logger.log_with_metadata(
-                logging.ERROR,
-                "OPENAI_API_KEY not found in environment variables",
-                metadata={'error_type': 'configuration'}
-            )
-            raise ValueError(
-                "OPENAI_API_KEY not found in environment variables. Please check your .env file."
-            )
+        # Initialize LLM based on provider
+        self.llm = self._initialize_llm(llm_provider)
 
         self.agent_d_client = AgentDClient()
         self.available_agents = {
             'search': BasicSearchAgent(self.agent_d_client),
             'insurance': InsuranceAgent()
         }
-
-        # Initialize LLM with environment variables
-        self.llm = ChatOpenAI(
-            model="gpt-3.5-turbo",
-            temperature=0,
-            api_key=openai_api_key
-        )
 
         # Create the agents capability string dynamically
         agents_capabilities = "\n".join([
@@ -84,6 +68,33 @@ Output format:
 }}}}\n"""),
             ("user", "{input}")
         ])
+
+    def _initialize_llm(self, provider: str):
+        """Initialize LLM based on provider choice."""
+        if provider == "openai":
+            openai_api_key = os.getenv('OPENAI_API_KEY')
+            if not openai_api_key:
+                self.logger.log_with_metadata(
+                    logging.ERROR,
+                    "OPENAI_API_KEY not found in environment variables",
+                    metadata={'error_type': 'configuration'}
+                )
+                raise ValueError(
+                    "OPENAI_API_KEY not found in environment variables. Please check your .env file."
+                )
+            return ChatOpenAI(
+                model="gpt-3.5-turbo",
+                temperature=0,
+                api_key=openai_api_key
+            )
+        elif provider == "ollama":
+            return ChatOllama(
+                model="llama3.3",
+                temperature=0,
+                format="json"
+            )
+        else:
+            raise ValueError(f"Unsupported LLM provider: {provider}")
 
     def get_available_agents(self) -> List[str]:
         """Return list of available agents."""
